@@ -209,7 +209,7 @@ def main():
             if st.button("🧹 清空点名记录"):
                 st.session_state.confirm_clear = True
                 st.warning("⚠️ 再次点击确认清空所有点名记录")
-                st.experimental_rerun()
+                st.rerun()
         else:
             col_confirm1, col_confirm2 = st.columns(2)
             with col_confirm1:
@@ -218,11 +218,11 @@ def main():
                     save_call_log(call_log)
                     st.session_state.confirm_clear = False
                     st.success("✅ 点名记录已清空")
-                    st.experimental_rerun()
+                    st.rerun()
             with col_confirm2:
                 if st.button("❌ 取消"):
                     st.session_state.confirm_clear = False
-                    st.experimental_rerun()
+                    st.rerun()
 
 
 if __name__ == "__main__":
