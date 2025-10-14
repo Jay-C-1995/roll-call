@@ -26,12 +26,6 @@
 
 3. 在浏览器中访问 `http://localhost:8501`
 
-## 部署到 Gitee Pages
-
-1. 将此仓库推送到 Gitee
-2. 在 Gitee 仓库中启用 Pages 服务
-3. 配置 Pages 使用 Streamlit 构建
-
 ## 文件说明
 
 - `roll_call.py`: 主应用程序文件
