@@ -104,24 +104,16 @@ def main():
     col1, col2 = st.columns([2, 1])
 
     with col1:
-        st.subheader("📋 学生名单管理")
+        st.subheader("📋 学生名单")
 
-        # 显示当前名单
-        roster_text = "\n".join(roster) if roster else ""
-        edited_roster = st.text_area(
-            "编辑学生名单（每行一个名字）", value=roster_text, height=200
-        )
-
-        # 保存名单按钮
-        if st.button("💾 保存名单"):
-            # 处理输入的名单
-            new_roster = [
-                name.strip() for name in edited_roster.split("\n") if name.strip()
-            ]
-            save_roster(new_roster)
-            st.success(f"✅ 名单已保存，共 {len(new_roster)} 名学生")
-            # 重新加载名单
-            roster = new_roster
+        # 显示当前名单（只读，不换行）
+        if roster:
+            # 将名单以逗号分隔的形式展示
+            roster_display = "、".join(roster)
+            st.markdown(f"**学生名单：** {roster_display}")
+            st.info(f"共 {len(roster)} 名学生")
+        else:
+            st.info("暂无学生名单")
 
         st.markdown("---")
 
