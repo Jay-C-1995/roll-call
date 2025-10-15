@@ -102,6 +102,8 @@ def main():
     # 初始化session state
     if "last_called_student" not in st.session_state:
         st.session_state.last_called_student = None
+    if "show_balloons" not in st.session_state:
+        st.session_state.show_balloons = False
 
     # 加载数据
     roster = load_roster()
@@ -111,19 +113,6 @@ def main():
     col1, col2 = st.columns([2, 1])
 
     with col1:
-        st.subheader("📋 学生名单")
-
-        # 显示当前名单（只读，不换行）
-        if roster:
-            # 将名单以逗号分隔的形式展示
-            roster_display = "、".join(roster)
-            st.markdown(f"**学生名单：** {roster_display}")
-            st.info(f"共 {len(roster)} 名学生")
-        else:
-            st.info("暂无学生名单")
-
-        st.markdown("---")
-
         st.subheader("🎲 点名功能")
 
         # 显示统计信息
@@ -150,7 +139,8 @@ def main():
 
                 # 保存点名结果到session state
                 st.session_state.last_called_student = selected_student
-
+                st.session_state.show_balloons = True
+                
                 # 使用st.rerun()刷新页面以显示更新后的统计数据
                 st.rerun()
         # 强制点名按钮
@@ -167,7 +157,8 @@ def main():
 
                 # 保存点名结果到session state
                 st.session_state.last_called_student = selected_student
-
+                st.session_state.show_balloons = True
+                
                 # 使用st.rerun()刷新页面以显示更新后的统计数据
                 st.rerun()
 
@@ -177,9 +168,86 @@ def main():
                 f"<h1 style='text-align: center; color: red;'>🎉 {st.session_state.last_called_student} 🎉</h1>",
                 unsafe_allow_html=True,
             )
-            st.balloons()
-            # 重置状态以避免重复显示
-            st.session_state.last_called_student = None
+            
+            # 只在需要显示balloons时触发
+            if st.session_state.show_balloons:
+                st.balloons()
+                st.session_state.show_balloons = False  # 重置状态
+            
+            # 添加清除点名结果按钮
+            if st.button("清除点名结果", key="clear_result"):
+                st.session_state.last_called_student = None
+                st.rerun()
+
+            # 不要在这里重置状态，让点名结果保持显示
+            # st.session_state.last_called_student = None
+
+        st.markdown("---")
+
+        st.subheader("📋 学生名单")
+
+        # 显示当前名单（只读，不换行）
+        if roster:
+            # 添加CSS样式
+            st.markdown(
+                """
+            <style>
+            .student-container {
+                background-color: #e6f3ff;
+                border-radius: 8px;
+                padding: 15px;
+                margin-bottom: 20px;
+                border: 1px solid #b3d9ff;
+            }
+            .student-grid {
+                display: grid;
+                grid-template-columns: repeat(10, 1fr);
+                gap: 8px;
+            }
+            .student-card {
+                background-color: #ffffff;
+                border: 1px solid #dee2e6;
+                border-radius: 4px;
+                padding: 5px 8px;
+                text-align: center;
+                font-size: 11px;
+                height: 28px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                color: #333333;
+            }
+            .student-card:hover {
+                background-color: #f8f9fa;
+                transform: scale(1.05);
+                color: #000000;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            }
+            </style>
+            """,
+                unsafe_allow_html=True,
+            )
+
+            # 使用HTML/CSS创建多列网格布局，每行10个学生
+            roster_html = '<div class="student-container"><div class="student-grid">'
+
+            for student in roster:
+                roster_html += f'<div class="student-card">{student}</div>'
+
+            roster_html += "</div></div>"
+
+            # 显示学生总数
+            st.markdown(
+                f"<small>👥 共{len(roster)}名学生</small>", unsafe_allow_html=True
+            )
+            st.markdown(roster_html, unsafe_allow_html=True)
+        else:
+            st.info("暂无学生名单")
 
     with col2:
         st.subheader("📝 最近点名记录")
@@ -215,6 +283,7 @@ def main():
         # 清空点名记录按钮
         if st.button("🧹 清空点名记录"):
             st.session_state.confirm_clear = True
+            # 移除这里的st.rerun()，避免立即刷新页面
 
         # 如果需要确认清空，则显示确认和取消按钮
         if st.session_state.confirm_clear:
@@ -226,10 +295,12 @@ def main():
                     save_call_log(call_log)
                     st.success("点名记录已清空！")
                     st.session_state.confirm_clear = False
+                    # 只有在确认清空后才刷新页面
                     st.rerun()
             with col2:
                 if st.button("❌ 取消", key="cancel_clear_btn"):
                     st.session_state.confirm_clear = False
+                    # 取消时不需要刷新页面
                     st.rerun()
 
 
