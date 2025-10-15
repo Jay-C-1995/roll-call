@@ -90,7 +90,7 @@ HARDCODED_ROSTER = [
 
 
 # 初始化应用
-st.set_page_config(page_title="黑马课堂点名器", page_icon="🎯", layout="wide")
+st.set_page_config(page_title="黑马python就业3期点名器", page_icon="🎯", layout="wide")
 
 
 # 页面标题
