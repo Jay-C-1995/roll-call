@@ -6,12 +6,92 @@ import os
 from datetime import datetime, timezone, timedelta
 
 # 配置常量
-ROSTER_FILE = "roster.json"
 CALL_LOG_FILE = "call_log.json"
 THREE_DAYS_IN_SECONDS = 3 * 24 * 3600
 
+# 硬编码的学生名单
+HARDCODED_ROSTER = [
+    "刘海燕",
+    "赵晟羽",
+    "刘佳欣",
+    "周佳旺",
+    "郭炳清",
+    "任明辉",
+    "冯炳栋",
+    "管中正",
+    "吴冬凡",
+    "朱国栋",
+    "曾凡政",
+    "李哲",
+    "韩宜恒",
+    "王文洋",
+    "覃东",
+    "王留根",
+    "干雨琪",
+    "王剑涛",
+    "史景麟",
+    "王生远",
+    "刘建成",
+    "王梅文",
+    "李星蒴",
+    "舒艾凌",
+    "周谊华",
+    "张文开",
+    "李建行",
+    "惠晨宇",
+    "朱磊",
+    "戴佳乐",
+    "粟嘉栋",
+    "于成龙",
+    "江文杰",
+    "谢岩",
+    "杜文辉",
+    "赵明宽",
+    "侯文浩",
+    "楼飘豪",
+    "陈维昊",
+    "徐俊豪",
+    "黄程",
+    "刘梦飞",
+    "周朝乐",
+    "莫林丛",
+    "王轩",
+    "韩雨辰",
+    "郭思琦",
+    "黄仲秋",
+    "聂心雨",
+    "张年",
+    "姚佳良",
+    "雷锦浩",
+    "宣智超",
+    "曾宇宝",
+    "汪建杰",
+    "段天博",
+    "王子赫",
+    "王博",
+    "周祎烁",
+    "陈鑫",
+    "孙塬东",
+    "宋越扬",
+    "袁执戈",
+    "席传鑫",
+    "王志博",
+    "马学超",
+    "王一普",
+    "吕济发",
+    "方启超",
+    "曹杰",
+    "侯国华",
+    "林贻胜",
+    "闫瑞祥",
+    "程浩",
+    "熊健",
+]
+
+
 # 初始化应用
-st.set_page_config(page_title="课堂点名器", page_icon="🎯", layout="wide")
+st.set_page_config(page_title="黑马课堂点名器", page_icon="🎯", layout="wide")
+
 
 # 页面标题
 st.title("🎯 杭州黑马AI大模型开发(python)就业3期课堂点名器")
@@ -21,10 +101,7 @@ st.markdown("---")
 # 创建数据文件（如果不存在）
 def initialize_files():
     """初始化数据文件"""
-    if not os.path.exists(ROSTER_FILE):
-        with open(ROSTER_FILE, "w", encoding="utf-8") as f:
-            json.dump([], f)
-
+    # 不再创建roster.json文件
     if not os.path.exists(CALL_LOG_FILE):
         with open(CALL_LOG_FILE, "w", encoding="utf-8") as f:
             json.dump({}, f)
@@ -32,19 +109,15 @@ def initialize_files():
 
 # 加载学生名单
 def load_roster():
-    """加载学生名单"""
-    try:
-        with open(ROSTER_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        return []
+    """加载学生名单（直接返回硬编码的名单）"""
+    return HARDCODED_ROSTER
 
 
 # 保存学生名单
 def save_roster(roster):
-    """保存学生名单"""
-    with open(ROSTER_FILE, "w", encoding="utf-8") as f:
-        json.dump(roster, f, ensure_ascii=False, indent=2)
+    """保存学生名单（不再实际保存到文件）"""
+    # 由于使用硬编码名单，此函数可以留空或添加日志
+    st.warning("学生名单已硬编码在程序中，无法修改")
 
 
 # 加载点名记录
@@ -140,7 +213,7 @@ def main():
                 # 保存点名结果到session state
                 st.session_state.last_called_student = selected_student
                 st.session_state.show_balloons = True
-                
+
                 # 使用st.rerun()刷新页面以显示更新后的统计数据
                 st.rerun()
         # 强制点名按钮
@@ -158,7 +231,7 @@ def main():
                 # 保存点名结果到session state
                 st.session_state.last_called_student = selected_student
                 st.session_state.show_balloons = True
-                
+
                 # 使用st.rerun()刷新页面以显示更新后的统计数据
                 st.rerun()
 
@@ -168,12 +241,12 @@ def main():
                 f"<h1 style='text-align: center; color: red;'>🎉 {st.session_state.last_called_student} 🎉</h1>",
                 unsafe_allow_html=True,
             )
-            
+
             # 只在需要显示balloons时触发
             if st.session_state.show_balloons:
                 st.balloons()
                 st.session_state.show_balloons = False  # 重置状态
-            
+
             # 添加清除点名结果按钮
             if st.button("清除点名结果", key="clear_result"):
                 st.session_state.last_called_student = None
