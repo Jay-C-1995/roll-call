@@ -134,7 +134,7 @@ def main():
         )
 
         # 随机点名按钮
-        if st.button("🎯 随机点名", key="random_call"):
+        if st.button("🎯 随机点名（3日内不会重复点名）", key="random_call"):
             if not roster:
                 st.warning("⚠️ 学生名单为空，请先添加学生")
             elif not available_students:
