@@ -3,7 +3,7 @@ import json
 import time
 import random
 import os
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 # 配置常量
 ROSTER_FILE = "roster.json"
@@ -84,10 +84,13 @@ def get_available_students(roster, call_log):
     return [student for student in roster if student not in recently_called]
 
 
-# 格式化时间戳为可读格式
+# 格式化时间戳为可读格式（使用东八区时间）
 def format_timestamp(timestamp):
-    """格式化时间戳为可读格式"""
-    dt = datetime.fromtimestamp(timestamp)
+    """格式化时间戳为可读格式（东八区时间）"""
+    # 创建东八区时区对象
+    tz_beijing = timezone(timedelta(hours=8))
+    # 将时间戳转换为UTC时间，然后转换为东八区时间
+    dt = datetime.fromtimestamp(timestamp, tz=timezone.utc).astimezone(tz_beijing)
     return dt.strftime("%Y-%m-%d %H:%M")
 
 
@@ -95,6 +98,10 @@ def format_timestamp(timestamp):
 def main():
     # 初始化文件
     initialize_files()
+
+    # 初始化session state
+    if "last_called_student" not in st.session_state:
+        st.session_state.last_called_student = None
 
     # 加载数据
     roster = load_roster()
@@ -121,6 +128,7 @@ def main():
 
         # 显示统计信息
         available_students = get_available_students(roster, call_log)
+
         st.info(
             f"📊 全部学生：{len(roster)}人 | 可点名学生：{len(available_students)}人"
         )
@@ -140,13 +148,11 @@ def main():
                 call_log[selected_student] = time.time()
                 save_call_log(call_log)
 
-                # 显示结果（大号字体+醒目颜色）
-                st.markdown(
-                    f"<h1 style='text-align: center; color: red;'>🎉 {selected_student} 🎉</h1>",
-                    unsafe_allow_html=True,
-                )
-                st.balloons()
+                # 保存点名结果到session state
+                st.session_state.last_called_student = selected_student
 
+                # 使用st.rerun()刷新页面以显示更新后的统计数据
+                st.rerun()
         # 强制点名按钮
         if st.button("💪 强制点名（忽略时间限制）", key="force_call"):
             if not roster:
@@ -159,12 +165,21 @@ def main():
                 call_log[selected_student] = time.time()
                 save_call_log(call_log)
 
-                # 显示结果（大号字体+醒目颜色）
-                st.markdown(
-                    f"<h1 style='text-align: center; color: red;'>🎉 {selected_student} 🎉</h1>",
-                    unsafe_allow_html=True,
-                )
-                st.balloons()
+                # 保存点名结果到session state
+                st.session_state.last_called_student = selected_student
+
+                # 使用st.rerun()刷新页面以显示更新后的统计数据
+                st.rerun()
+
+        # 显示点名结果（放在按钮下方）
+        if st.session_state.last_called_student:
+            st.markdown(
+                f"<h1 style='text-align: center; color: red;'>🎉 {st.session_state.last_called_student} 🎉</h1>",
+                unsafe_allow_html=True,
+            )
+            st.balloons()
+            # 重置状态以避免重复显示
+            st.session_state.last_called_student = None
 
     with col2:
         st.subheader("📝 最近点名记录")
@@ -197,22 +212,23 @@ def main():
         if "confirm_clear" not in st.session_state:
             st.session_state.confirm_clear = False
 
-        if not st.session_state.confirm_clear:
-            if st.button("🧹 清空点名记录"):
-                st.session_state.confirm_clear = True
-                st.warning("⚠️ 再次点击确认清空所有点名记录")
-                st.rerun()
-        else:
-            col_confirm1, col_confirm2 = st.columns(2)
-            with col_confirm1:
-                if st.button("✅ 确认清空"):
+        # 清空点名记录按钮
+        if st.button("🧹 清空点名记录"):
+            st.session_state.confirm_clear = True
+
+        # 如果需要确认清空，则显示确认和取消按钮
+        if st.session_state.confirm_clear:
+            st.warning("⚠️ 确认清空所有点名记录？")
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("✅ 确认", key="confirm_clear_btn"):
                     call_log.clear()
                     save_call_log(call_log)
+                    st.success("点名记录已清空！")
                     st.session_state.confirm_clear = False
-                    st.success("✅ 点名记录已清空")
                     st.rerun()
-            with col_confirm2:
-                if st.button("❌ 取消"):
+            with col2:
+                if st.button("❌ 取消", key="cancel_clear_btn"):
                     st.session_state.confirm_clear = False
                     st.rerun()
 
